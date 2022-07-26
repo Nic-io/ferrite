@@ -1,123 +1,14 @@
+#+TITLE: Ferrite
+#+STARTUP: A cortex M4 Baremetal startup project
 
-flash.s
 
-#+BEGIN_SRC asm
-.thumb
-.thumb_func
-.global _start
-_start:
-stacktop: .word 0x20001000
-.word reset
-.word hang
+The aim of this project -on top of serving as an exercise- is to have a minimal platfom to test and
+optimize chunks of codes that would be used in feature rich projects.
 
-.thumb_func
-reset:
-    bl notmain
-    b hang
+It's also a nice to have for quick fiddling on new targets
 
-.thumb_func
-hang:   b .
-
-.thumb_func
-.globl PUT32
-PUT32:
-    str r1,[r0]
-    bx lr
+#+BEGIN_SRC Shell
+make
 #+END_SRC
 
-notmain.c
-#+BEGIN_SRC C
-void PUT32 ( unsigned int, unsigned int );
-#define UART0BASE 0x4000C000
-int notmain ( void )
-{
-    unsigned int rx;
-    for(rx=0;rx<8;rx++)
-    {
-        PUT32(UART0BASE+0x00,0x30+(rx&7));
-    }
-    return(0);
-}
-#+END_SRC
-
-flash.ld
-#+BEGIN_SRC C
-ENTRY(_start)
-
-MEMORY
-{
-    rom : ORIGIN = 0x00000000, LENGTH = 0x1000
-    ram : ORIGIN = 0x20000000, LENGTH = 0x1000
-}
-
-SECTIONS
-{
-    .text : { *(.text*) } > rom
-    .rodata : { *(.rodata*) } > rom
-    .bss : { *(.bss*) } > ram
-}
-#+END_SRC
-
-
-(I am told the entry point being a thumb function address is critical YMMV)
-
-
-#+BEGIN_SRC makefile
-arm-none-eabi-as --warn --fatal-warnings -mcpu=cortex-m3 flash.s -o flash.o
-arm-none-eabi-gcc -Wall -O2 -ffreestanding -mcpu=cortex-m3 -mthumb -c notmain.c -o notmain.o
-arm-none-eabi-ld -nostdlib -nostartfiles -T flash.ld flash.o notmain.o -o notmain.elf
-arm-none-eabi-objdump -D notmain.elf > notmain.list
-arm-none-eabi-objcopy -O binary notmain.elf notmain.bin
-#+END_SRC
-
-
-check the vector table, etc.
-#+BEGIN_SRC asm
-00000000 <_start>:
-   0:   20001000
-   4:   0000000d
-   8:   00000013
-
-0000000c <reset>:
-   c:   f000 f804   bl  18 <notmain>
-  10:   e7ff        b.n 12 <hang>
-
-00000012 <hang>:
-  12:   e7fe        b.n 12 <hang>
-#+END_SRC
-Looks good.
-
-And run it
-
-#+BEGIN_SRC shell
-qemu-system-arm -M lm3s811evb -m 8K -nographic -kernel ferrite.bin
-#+END_SRC
-
-#+RESULTS:
-
-Then ctrl-a then x to exit
-
-QEMU: Terminated
-
--cpu cortex-m4 works as well as one would expect. Would have to try to find things different between the m3 and m4 that might show up in a sim like this and go from there.
-
-After Luminary Micro (acquired by ti a while ago now) I do not think anyone else put the effort in for a machine. But as already discussed in at least one question at this site, you can run the cores (an exercise for the reader).
-
-For versatilepb
-
-int notmain ( void )
-{
-    unsigned int ra;
-
-    for(ra=0;;ra++)
-    {
-        ra&=7;
-        PUT32(0x101f1000,0x30+ra);
-    }
-
-    return(0);
-}
-
-qemu-system-arm -machine versatileab -cpu cortex-m4 -nographic -monitor null -kernel notmain.elf
-qemu-system-arm: This board cannot be used with Cortex-M CPUs
-
+#+RESULT:
