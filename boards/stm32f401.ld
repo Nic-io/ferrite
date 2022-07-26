@@ -1,5 +1,5 @@
 /* Label for the program's entry point */
-ENTRY(reset_handler)
+/*ENTRY(rsthdl)*/
 /* End of RAM / Start of stack */
 /* (4KB SRAM) */
 _estack = 0x20001000;
@@ -12,19 +12,10 @@ MEMORY
 {
   FLASH ( rx )      : ORIGIN = 0x08000000, LENGTH = 32K
   RAM ( rxw )       : ORIGIN = 0x20000000, LENGTH = 4K
-  ALIAS ( rx )       : ORIGIN = 0x00000000, LENGTH = 1K
 }
 
 SECTIONS
 {
-  /* The flash is aliased. On reset PC loads value from 0x0 */
-  /* The vector table goes at the start of flash. */
-  .vector_table :
-  {
-    . = ALIGN(4);
-    KEEP (*(.vector_table))
-    . = ALIGN(4);
-  } >ALIAS
   /* The 'text' section contains the main program code. */
   .text :
   {
