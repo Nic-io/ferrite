@@ -8,7 +8,7 @@
 CROSS_COMPILE ?= arm-none-eabi
 
 AOPS = --warn --fatal-warnings -mcpu=cortex-m4 -mthumb
-COPS = -Wall -c -g -O0 -nostdlib -nostartfiles --specs=nosys.specs -ffreestanding -mcpu=cortex-m4 -mthumb
+COPS = -Wall -c -g -O0 -nostdlib -nostartfiles --specs=nosys.specs -ffreestanding -mcpu=cortex-m4 -mthumb -std=gnu11 -pedantic
 
 BUILD_DIR=./build
 SRC_DIR=./src
