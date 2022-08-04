@@ -7,8 +7,18 @@ optimize chunks of codes that would be used in feature rich projects.
 
 It's also a nice to have for quick fiddling on new targets
 
+*   To build and launch emulation run:
+
 #+BEGIN_SRC Shell
-make
+make qemu
+
+make run
 #+END_SRC
 
-#+RESULT:
+Then within the qemu terminal you can run a gdb-server
+
+*   To build for Nucleo run:
+
+#+BEGIN_SRC Shell
+make stm32f4
+#+END_SRC
